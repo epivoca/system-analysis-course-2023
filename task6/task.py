@@ -80,13 +80,13 @@ def get_kendell(experts) -> float:
     return S / Dmax
 
 
-def task(strA: str, strB: str):
+def task(strA: str, strB: str) -> float:
 
     matrixF = get_matrix_from_expert(strA)
     matrixG = get_matrix_from_expert(strB)
     experts = [matrixG, matrixF]
     res = get_kendell(experts)
-    
+
     return res
 
 

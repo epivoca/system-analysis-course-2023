@@ -1,18 +1,22 @@
 import json
+from typing import List
 
 import numpy as np
 
 
-def get_clusters_from_str(str_json):
+def get_clusters_from_str(str_json) -> List:
     str_json = str(str_json[1:-1])
     str_split = str_json.split(",")
     clusters = []
     cluster_read = False
+
     for substr in str_split:
         current_cluster = cluster_read
+
         if '[' in substr:
             substr = substr[1:]
             cluster_read = True
+
         if ']' in substr:
             substr = substr[:-1]
             cluster_read = False
@@ -21,6 +25,7 @@ def get_clusters_from_str(str_json):
             clusters.append([int(substr)])
         else:
             clusters[-1].append(int(substr))
+
     return clusters
 
 
@@ -29,9 +34,10 @@ def get_matrix_from_expert(str_json: str):
     n = 0
 
     clusters = get_clusters_from_str(str_json)
-    # clusters = json.loads(str_json)["str"]
+
     for cluster in clusters:
         n += len(cluster)
+
     for i in range(n):
         matrix.append([1] * n)
 
@@ -60,7 +66,7 @@ def get_AND_matrix(matrix1, matrix2):
     return np.array(matrix)
 
 
-def get_OR_matrix(matrix1, matrix2):
+def get_OR_matrix(matrix1, matrix2) -> List:
     rows = len(matrix1)
     cols = len(matrix1[0])
     matrix = []
@@ -74,16 +80,19 @@ def get_OR_matrix(matrix1, matrix2):
     return matrix
 
 
-def get_clusters(matrix, est1, est2):
+def get_clusters(matrix, est1, est2) -> str:
     clusters = {}
 
     rows = len(matrix)
     cols = len(matrix[0])
     exclude=[]
+
     for row in range(rows):
         if row+1 in exclude:
             continue
+
         clusters[row + 1] = [row + 1]
+
         for col in range(row+1, cols):
             if matrix[row][col] == 0:
                 clusters[row + 1].append(col + 1)
@@ -94,9 +103,8 @@ def get_clusters(matrix, est1, est2):
         if not result:
             result.append(clusters[k])
             continue
-        # если сумма единичек меньше значит справа стоит меньше значит объект левее
+
         for i, elem in enumerate(result):
-            # если объекты неразличимы в обоих оценках, то добавляяем в кластер вершины
             if np.sum(est1[elem[0] - 1]) == np.sum(est1[k - 1]) and np.sum(est2[elem[0] - 1]) == np.sum(est2[k - 1]):
                 for c in clusters[k]:
                     result[i].append(c)
@@ -105,6 +113,7 @@ def get_clusters(matrix, est1, est2):
             if np.sum(est1[elem[0] - 1]) < np.sum(est1[k - 1]) or np.sum(est2[elem[0] - 1]) < np.sum(est2[k - 1]):
                 result = result[:i] + clusters[k] + result[i:]
                 break
+
         result.append(clusters[k])
 
     final = []
@@ -113,10 +122,11 @@ def get_clusters(matrix, est1, est2):
             final.append(r[0])
         else:
             final.append(r)
+
     return str(final)
 
 
-def task(string1, string2):
+def task(string1, string2) -> List:
     mx1 = get_matrix_from_expert(string1)
     mx2 = get_matrix_from_expert(string2)
 
@@ -125,11 +135,40 @@ def task(string1, string2):
 
     mxOR = get_OR_matrix(mxAND, mxAND_T)
     clusters = get_clusters(mxOR, mx1, mx2)
+
     return clusters
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "--file",
+        type=str,
+        required=True,
+        help="Path for your CSV file.",
+    )
+    parser.add_argument(
+        "--x",
+        type=str,
+        required=True,
+        help="Row index."
+    )
+    parser.add_argument(
+        "--y",
+        type=str,
+        required=True,
+        help="Column index."
+    )
+
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
+    args = parse_args()
+
     string1 = '[1,[2,3],4,[5,6,7],8,9,10]'
     string2 = '[[1,2],[3,4,5],6,7,9,[8,10]]'
     results = task(string1, string2)
+
     print(results)
