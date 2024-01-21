@@ -1,11 +1,13 @@
+from typing import List
 import numpy as np
 
 
-def get_clusters_from_str(str_json):
+def get_clusters_from_str(str_json) -> List[int]:
     str_json = str(str_json[1:-1])
     str_split = str_json.split(",")
     clusters = []
     cluster_read = False
+
     for substr in str_split:
         current_cluster = cluster_read
         if '[' in substr:
@@ -19,7 +21,7 @@ def get_clusters_from_str(str_json):
             clusters.append([int(substr)])
         else:
             clusters[-1].append(int(substr))
-    #print(clusters)
+
     return clusters
 
 
@@ -44,7 +46,7 @@ def get_matrix_from_expert(str_json: str):
     return np.array(matrix)
 
 
-def get_kendell(experts):
+def get_kendell(experts) -> float:
     m = len(experts)
     n = len(experts[0])
 
@@ -75,8 +77,6 @@ def get_kendell(experts):
 
     Dmax = (m*m * (n**3 - n) - m*H) / 12
 
-    #print("S: ", S)
-    #print("Dmax: ", Dmax)
     return S / Dmax
 
 
@@ -86,11 +86,41 @@ def task(strA: str, strB: str):
     matrixG = get_matrix_from_expert(strB)
     experts = [matrixG, matrixF]
     res = get_kendell(experts)
+    
     return res
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "--file",
+        type=str,
+        required=True,
+        help="Path for your CSV file.",
+    )
+    parser.add_argument(
+        "--x",
+        type=str,
+        required=True,
+        help="Row index."
+    )
+    parser.add_argument(
+        "--y",
+        type=str,
+        required=True,
+        help="Column index."
+    )
+
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
+    args = parse_args()
+
     print(
-        task("[1,[2,3],4,[5,6,7],8,9,10]",
-        "[[1,2],[3,4,5],6,7,9,[8,10]]")
+        task(
+        "[1,[2,3],4,[5,6,7],8,9,10]",
+        "[[1,2],[3,4,5],6,7,9,[8,10]]"
+        )
     )
