@@ -1,14 +1,40 @@
 import argparse
 import csv
+import sys
+
+path = str(sys.argv[1])
+lineIdx = int(sys.argv[2])
+columnIdx = int(sys.argv[3])
 
 
-def parse_csv(file: str, x: int, y: int) -> None:
-    with open(file, 'r') as f:
-        csv_reader = csv.reader(f)
-        csv_data = list(csv_reader)
+def get_line(table, line_idx):
+    i = 0
+    line = table.readline()
+    while i < line_idx:
+        line = table.readline()
+        i += 1
+    if line is not None:
+        split_line = line.split(",")
+    else:
+        split_line = None
+    return split_line
 
-    print(csv_data[x][y])
 
+def get_cell(split_line, column_idx):
+    if len(split_line) > column_idx:
+        value = split_line[columnIdx]
+    else:
+        value = None
+    return value
+
+
+def task() -> None:
+    if columnIdx >= 0 and lineIdx >= 0:
+        data = open(path, "r")
+        cells = get_line(data, lineIdx)
+        result = get_cell(cells, columnIdx)
+    else:
+        result = None
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
@@ -37,4 +63,4 @@ def parse_args() -> argparse.Namespace:
 
 if __name__ == '__main__':
     args = parse_args()
-    parse_csv(file=args.file, x=args.x, y=args.y)
+    print(task())
